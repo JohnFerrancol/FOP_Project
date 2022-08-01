@@ -1,3 +1,8 @@
+'''
+    Class: EL/EP0301/FT/02
+    Student 1: Tan Xin Yu 2130929
+    Student 2: John Gabriel Gamboa Ferrancol 2106263
+'''
 from tabulate import tabulate
 import time
 from copy import deepcopy
