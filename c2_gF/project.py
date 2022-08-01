@@ -4,29 +4,28 @@ from copy import deepcopy
 import requests
 
 
-# Done By Tan Xin Yu
+# Done By Tan Xin Yu: Used to import the data from the csv file and store it a s a 2D Listz
 def importFile():
     file = open("portfolioStock.csv", "r")
     fileRead = file.readlines()
     stockList = []
     stocks = []
 
-    for i in fileRead:  # removes \n in lists
+    for i in fileRead:
         element = str(i)
+        # Removes the \n from the element
         lineremoval = element.replace("\n", "")
         stockList.append(lineremoval)
-
-    for x in stockList:  # converts from a list into a 2D list
+    for x in stockList:
+        # For each string, x,  in the stockList, convert the string into a list
         y = x.split(",")
         stocks.append(y)
 
     file.close()
-    print("---------------------- Imported 2D List to portfolioStock.csv! ----------------------")
     return stocks
 
 
 dataArray = importFile()
-headersArray = dataArray[0]
 
 
 # Done by John Gabriel : Function Used to validate any numerical inputs
@@ -125,27 +124,27 @@ def choiceValidation(prompt, lowerLimit, upperLimit):
                 print("Error! Input should be an integer")
 
 
-# Done by Tan Xin Yu
+# Done by Tan Xin Yu: Used to display all of the stocks in the csv file
 def displayStocks():
 
     print("    ----------------------- Display Stocks -----------------------")
     displayHeadersArray = ["No"] + dataArray[0]
 
+    # Tabulate is used to present tabular data
     # Using tabulate function: https://pypi.org/project/tabulate/
     print(tabulate(dataArray[1:], headers=displayHeadersArray,
           showindex=range(1, len(dataArray)), tablefmt="fancy_grid"))
 
 
-# Done by John Gabriel
+# Done by John Gabriel: Used to add a stock into the data 2D List
 def addStock():
 
     print("    ----------------------- Add Stocks -----------------------")
 
-    # Call the various input validation functions to validate the inputs given by the user
+    # Call the various input validation functions to validate the inputs given by the user and obtain the values returned from the following function
     companyName = nameValidation("Enter Company Name: ")
     marketCapitalization = capitalizationValidation(
         "Enter market capitalization of company: Mega, Large or Mid: ")
-
     qty = numericalInputValidation("Enter Number of Stock Bought = ")
     boughtPrice = numericalInputValidation("Enter Price of Stock Bought = ")
     marketPrice = numericalInputValidation("Enter Market Price of Stock = ")
@@ -154,6 +153,7 @@ def addStock():
     dataArray.append([companyName,
                      marketCapitalization, str(qty), str(boughtPrice), str(marketPrice)])
 
+    # Display to the user that the stock has been added to the data 2D List
     print()
     print(
         f"----------------------- Added {companyName} Successfully -----------------------")
@@ -166,7 +166,7 @@ def chooseCompany():
     print("No - Company")
     print("----------------------------")
 
-    # Iterate over the dataArray List and display all of the companies and their following indexes
+    # Iterate over the dataArray List, skipping over the header which is the first list in the 2D List and display all of the companies and their following indexes
     for i in range(1, len(dataArray)):
         print(i, " - ", dataArray[i][0])
 
@@ -182,7 +182,7 @@ def chooseCompany():
     return choice
 
 
-# Done by Tan Xin Yu
+# Done by Tan Xin Yu: Used to update an information about the stock that the user chose from the chooseCompany function
 def updateStock(companyNo):
 
     print("    ----------------------- Update Stocks -----------------------")
@@ -190,7 +190,11 @@ def updateStock(companyNo):
     # Get the company from their index
     company = dataArray[companyNo]
 
-    # ljust is to give 20 spaces to the right of the Index:
+    # Obtain the header of the csv file
+    headersArray = dataArray[0]
+
+    # ljust is to give n spaces to the left of the string, where n is the argument that needs to be inputed
+    # ljust method : https://www.w3schools.com/python/ref_string_ljust.asp
     print("Index:".ljust(20), companyNo)
 
     # Iterate over the company and show the information of the company, its name, capitalisation, qty, bought and market price
@@ -203,10 +207,11 @@ def updateStock(companyNo):
 
     print()
     if choice == "E" or choice == "e":
-        print("Returning to Main Menu")
+        print("Returning to Main Menu...")
 
     # Prompt the user for the new information about the stock and update accordingly
     # Call the respective validation input functions
+    # We -1 to the index for each information as the choice given is not the index of the information in the dataArray
     elif choice == 1:
         newName = nameValidation("(1) Enter new Company Name: ")
         company[choice - 1] = newName
@@ -224,35 +229,36 @@ def updateStock(companyNo):
         f"----------------------- Updated {company[0]} Successfully -----------------------")
 
 
-# Done By John Gabriel
+# Done By John Gabriel: Used to remove the stock the user chose from the chooseCompany function from the dataArray 2D List
 def removeStock(companyNo):
 
     # Obtain the name of the company before removing it
     companyName = dataArray[companyNo][0]
 
-    # Remove the company from the dataArray
+    # Remove the company from the dataArray by using the pop method, which gets the index of the company in the dataArray
     dataArray.pop(companyNo)
 
     print(
         f"---------------------- Removed {companyName} Successfully -----------------------")
 
 
-# Done By John Gabriel
+# Done By John Gabriel: Used to display the following portfolio statement required
 def portfolioStatement():
 
     # Deepcopy is used to create a copy of the dataArray in a seperate location in memory
     tempArray = deepcopy(dataArray)
 
-    # Create a new headersArray
+    # Create a new headersArray and extend the headersArray with additional headers and remove capitalization from headersArray
     tempHeadersArray = ['No'] + tempArray[0]
     tempHeadersArray.extend(["Total Invested", "Invested Portfolio Size",
                              "Total Market Value", "Profit/Loss", "Market Portfolio Size"])
+    tempHeadersArray.remove("Capitalization")
 
     totalInvestmentValue = 0
     totalMarketValue = 0
     totalProfit = 0
 
-    # Iterate over the temporary data aray and calculate the totalInvestmentValue, totalMarketValue and totalProfit
+    # Iterate over the temporary data array, skipping the header and calculate the totalInvestmentValue, totalMarketValue and totalProfit
     for company in tempArray[1:]:
 
         # Obtain the qty, boughtPrice and marketPrice of the follwing stock/ company
@@ -268,6 +274,7 @@ def portfolioStatement():
         totalMarketValue += marketPrice * qty
         totalProfit += profit * qty
 
+    # Iterate over the temporary data array, skipping the header and calculate the investedPortfolioSize, marketPortfolioSize, profit
     for company in tempArray[1:]:
 
         qty = float(company[2])
@@ -289,7 +296,10 @@ def portfolioStatement():
         company.extend([totalInvested, investedPortfolioSize,
                        totalMarket, profit, marketPortfolioSize])
 
-    print("----------------------- Portfolio Statement -----------------------".rjust(125))
+        # Remove the capitalization as it is not needed for the portfolio statement
+        company.remove(company[1])
+
+    print("----------------------- Portfolio Statement -----------------------".rjust(110))
 
     # Tabulate the following data into the table, display the total invested, total market value and total profit
     print(tabulate(tempArray[1:],
@@ -299,7 +309,7 @@ def portfolioStatement():
     print("Total Profit: ", totalProfit)
 
 
-# Done By John Gabriel
+# Done By John Gabriel: Used to export the the dataArray 2D List to csv file
 def exportFile():
 
     with open("portfolioStock.csv", "w") as file:
@@ -316,7 +326,7 @@ def exportFile():
     print("---------------------- Exported 2D List to portfolioStock.csv! ----------------------")
 
 
-# Done By Tan Xin Yu
+# Done By Tan Xin Yu: Function used to get customer feedback
 def feedbackForm():
 
     file = open('feedback.txt', 'a')
@@ -346,7 +356,7 @@ def feedbackForm():
     file.close()
 
 
-# Done By John Gabriel to look up the stock using the IEX API
+# Done By John Gabriel: Look up the stock using the IEX API
 def lookUpStock():
 
     print("    ----------------------- Look up Stocks -----------------------")
@@ -372,16 +382,7 @@ def lookUpStock():
 
         print()
 
-        # If the user wants to add the stock, redirectiexApiKey = 'pk_d2cf149ae68b4b748b6dbf4723c2019a'
-        apiUrl = f'https://cloud.iexapis.com/stable/stock/{stock}/quote?token={iexApiKey}'
-
-        # Extracting data from the IEX API: https://medium.com/codex/pulling-stock-data-from-iex-cloud-with-python-d44f63bb82e0
-        # This stores data in an form of json: JavaScript Object Notation, similar to a dictionary in python
-        apiData = requests.get(apiUrl).json()
-
-        # Obtain the companyName and the lastestPrice key from the json or dictionary obtained
-        companyName = apiData['companyName']
-        latestPrice = apiData['latestPrice'] them to the addStock function
+        # If the user wants to add the stock, redirect them to the addStock function
         if (isBuying.upper() == 'Y'):
             addStock()
 
@@ -396,6 +397,7 @@ def lookUpStock():
         print("---------------------- Stock does not exist ----------------------")
 
 
+# Display the main menu as well as run one of the following functions chosen by the user for each iteration of the loop until an 'e' or 'E' has been inputted by the user
 while True:
     print("=======================================================================")
     print(" Class    SN      Student Name")
@@ -417,9 +419,13 @@ while True:
     print("E. Exit Main Menu")
     print("-----------------------------------------------------------------------")
 
+    # Prompt the user which function they want to run from the program
+    # Call the choiceValidation function to validate the input of the user, with 1 and 9 being the lowerLimit and upperLimit respectively
     choice = choiceValidation("    Select an option: ", 1, 9)
 
     print()
+
+    # Run the following function depending on what the user inputs as the choice
     if choice == "E" or choice == "e":
         print("Exiting program...")
         break
@@ -428,16 +434,26 @@ while True:
     elif choice == 2:
         addStock()
     elif choice == 3:
+        # Run the chooseCompany to allow the user to choose the company he/she wants to edit
         companyNo = chooseCompany()
         print()
+
+        # If the user chooses to exit the function, continue to the top of the while loop
         if companyNo == "E" or companyNo == "e":
             continue
+
+        # Run the updateStock function with the index of the company in the dataArray they want to update as the argument
         updateStock(companyNo)
     elif choice == 4:
+        # Run the chooseCompany to allow the user to choose the company he/she wants to edit
         companyNo = chooseCompany()
         print()
+
+        # If the user chooses to exit the function, continue to the top of the while loop
         if companyNo == "E" or companyNo == "e":
             continue
+
+        # Run the removeStock function with the index of the company in the dataArray they want to remove as the argument
         removeStock(companyNo)
     elif choice == 5:
         portfolioStatement()
@@ -453,4 +469,5 @@ while True:
     # Pause the program for 2 seconds before looping again
     print()
     time.sleep(2)
+
 
